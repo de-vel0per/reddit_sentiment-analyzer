@@ -5,7 +5,10 @@ import streamlit as st
 
 st.title("Reddit Sentiment Analyzer")
 
-headers = {"User-Agent": "sentiment-analyzer/0.1"}
+
+#headers = {"User-Agent": "sentiment-analyzer/0.1"}
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"}
+
 subreddit = st.text_input("Enter subreddit name")
 button = st.button("Analyze")
 if subreddit and button:
