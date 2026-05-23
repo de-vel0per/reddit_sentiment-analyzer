@@ -3,18 +3,27 @@ from textblob import TextBlob
 import pandas as pd
 import streamlit as st
 
-st.title("HackerNews Sentiment Analyzer")
-button = st.button("Fetch Top Stories")
+st.title("Reddit Sentiment Analyzer")
 
-if button:
-    ids = requests.get("https://hacker-news.firebaseio.com/v0/topstories.json").json()[:25]
+
+#headers = {"User-Agent": "sentiment-analyzer/0.1"}
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",}
+
+subreddit = st.text_input("Enter subreddit name")
+button = st.button("Analyze")
+url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit=25&raw_json=1"
+if subreddit and button:
+    response = requests.get(url, headers=headers, timeout=10)
+    st.write(response.status_code)
     try:                       
+        posts = response.json()["data"]["children"]
         results = []
         tweets = []
 
-        for id in ids:
-            story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{id}.json").json()
-            tweet = story.get("title", "")
+        for post in posts:
+            tweet = post["data"]["title"]
             tweets.append(tweet)
             check_sentiment = TextBlob(tweet).sentiment.polarity
             if check_sentiment > 0:
@@ -27,9 +36,12 @@ if button:
         #print(response.json())
         pd.set_option("display.max_colwidth", None)
         df = pd.DataFrame(results)
+
+        #print(df)
         st.dataframe(df)
+        #print(df["Sentiments"].value_counts())
         st.bar_chart(df["Sentiments"].value_counts())
     except Exception as e:
         st.error(f"Something went wrong :{e}")
 else:
-    st.info("Click the button to analyze top HackerNews stories!")
+    st.info("Enter a subreddit name above to get started!")
